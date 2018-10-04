@@ -49,6 +49,7 @@
                         </tr>
                         </tfoot>
                     </table>
+                    <button id="reload" class="btn btn-primary mx-auto" style="width: 200px;display: block">Comanda din nou</button>
                 </div>
             </div>
             <div id="step-1" class="row">
@@ -75,7 +76,7 @@
                                 </div>
                             </div>
                             <div class="col">
-                                <div class="form-group">
+                                <div class="form-group" style="margin-left:-30px;">
                                     <label for="prenume">Prenume</label>
                                     <input type="text" class="form-control" id="prenume" placeholder="Prenume">
                                 </div>
@@ -137,7 +138,7 @@
                             <div class="col">
                                 <div class="form-group">
                                     <label for="cantitate">Cantitate</label>
-                                    <input type="number" class="form-control" id="cantitate" placeholder="Cantitate">
+                                    <input type="text" class="form-control" id="cantitate" placeholder="Cantitate">
                                 </div>
                                 <div class="form-group">
                                     <button type="submit" id="adauga" class="btn btn-primary mx-auto" style="margin-top:48px;width: 200px;display: block"><i class="fas fa-plus"></i> Adauga in cos</button>

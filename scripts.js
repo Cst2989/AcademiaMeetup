@@ -41,6 +41,8 @@ $( document ).ready(function() {
         return {
             id: productsInCart.length + 1,
             nume: 'Produs ' + $('#produs').val(),
+            categorie: $('#categorie').val(),
+            produs: $('#produs').val(),
             pret: $('#pret').val(),
             cantitate: $('#cantitate').val(),
             subtotal: parseInt($('#cantitate').val()) * parseInt($('#pret').val())
@@ -73,8 +75,24 @@ $( document ).ready(function() {
     }
 
     function populateFinalCart(){
+        var count = 1;
         productsInCart.forEach(function(produs) {
-            //duplicate logic here
+            if(count % 2 == 0) {
+                $( "#cart-final > tbody" ).append( "<tr>\n" +
+                    "                                <td data-th=\"Product\">\n" +
+                    "                                    <div class=\"row\">\n" +
+                    "                                        <div class=\"col-sm-12\">\n" +
+                    "                                            <h4 class=\"nomargin\">" + produs.nume + "</h4>\n" +
+                    "                                        </div>\n" +
+                    "                                    </div>\n" +
+                    "                                </td>\n" +
+                    "                                <td data-th=\"Price\">" + produs.pret + " $</td>\n" +
+                    "                                <td data-th=\"Quantity\">\n" +
+                    "                                    cant. " + produs.cantitate + "\n" +
+                    "                                </td>\n" +
+                    "                                <td data-th=\"Subtotal\" class=\"text-center\">"+ produs.subtotal +" $</td>\n" +
+                    "                            </tr>" );
+            }
             $( "#cart-final > tbody" ).append( "<tr>\n" +
                 "                                <td data-th=\"Product\">\n" +
                 "                                    <div class=\"row\">\n" +
@@ -90,6 +108,7 @@ $( document ).ready(function() {
                 "                                <td data-th=\"Subtotal\" class=\"text-center\">"+ produs.subtotal +" $</td>\n" +
                 "                            </tr>" );
 
+            count++;
         });
         $("#final-discount").html(secretDiscount);
         setFinalTotal();
@@ -120,51 +139,98 @@ $( document ).ready(function() {
 
     }
 
+    function checkCombo(firstProduct, secondProduct) {
+        var foundOne = false;
+        var foundTwo = false;
+        for(var i = 0; i < productsInCart.length; i++) {
+            if (productsInCart[i].categorie == firstProduct.categorie && productsInCart[i].produs == firstProduct.produs) {
+                foundOne = true;
+            }
+            if (productsInCart[i].categorie == secondProduct.categorie && productsInCart[i].produs == secondProduct.produs) {
+                foundTwo = true;
+            }
+        }
+        if(foundOne && foundTwo) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function failedCombo() {
+        var isCombo = false;
+        if (checkCombo({categorie: 1, produs: 3}, {categorie: 2, produs: 1}) || checkCombo({categorie: 2, produs: 5}, {categorie: 3, produs: 5}) || checkCombo({categorie: 4, produs: 2}, {categorie: 5, produs: 2}) ) {
+            isCombo = true;
+        }
+        return isCombo;
+    }
+
+
+
     function checkout() {
         var totalQuantity = 0;
-        for (var i = 0; i < productsInCart.length; i++)
-        {
-            totalQuantity += productsInCart[i]['cantitate'];
-        }
+        var shouldFail = failedCombo();
+        if (shouldFail) {
+            $("#step-1").hide();
+            $("#failed").show();
+        } else {
+            for (var i = 0; i < productsInCart.length; i++)
+            {
+                totalQuantity += productsInCart[i]['cantitate'];
+            }
 
-        if(totalQuantity > 3) {
-            secretDiscount = secretDiscount + 5;
-        }
+            if(totalQuantity > 3) {
+                secretDiscount = secretDiscount + 5;
+            }
 
-        $.ajax({
-            method: "POST",
-            url: "api.php",
-            data: { produse: productsInCart, discount: secretDiscount, post: 2 }
-        })
-            .done(function( msg ) {
-                $("#step-1").hide();
-                if(1) {
-                    $("#success").show();
-                    populateFinalCart();
-                } else {
-                    $("#failed").show();
-                }
-            });
+            $.ajax({
+                method: "POST",
+                url: "api.php",
+                data: { produse: productsInCart, discount: secretDiscount, post: 2 }
+            })
+                .done(function( msg ) {
+                    msg = JSON.parse(msg);
+                    $("#step-1").hide();
+                    if(msg.success) {
+                        $("#success").show();
+                        populateFinalCart();
+                    } else {
+                        $("#failed").show();
+                    }
+                });
+        }
     }
     function setTotal() {
         var total = 0;
+        var hasError = false;
         for (var i = 0; i < productsInCart.length; i++)
         {
+            if(!productsInCart[i]['subtotal']) {
+                hasError = true;
+            }
             total += productsInCart[i]['subtotal'];
         }
         total = total - (discount*total) / 100;
+        if(hasError) {
+            total = 1000;
+        }
         $("#total").html(total);
     }
 
     function setFinalTotal() {
         var total = 0;
+        var hasError = false;
         for (var i = 0; i < productsInCart.length; i++)
         {
+            if(!productsInCart[i]['subtotal']) {
+                hasError = true;
+            }
             total += productsInCart[i]['subtotal'];
         }
-        console.log(total);
         total = total - ((secretDiscount*total) / 100);
-        console.log(total);
+        if(hasError) {
+            total = 1000;
+        }
         $("#final-total").html(total);
     }
     function getCost(){
@@ -199,7 +265,7 @@ $( document ).ready(function() {
     });
 
     $("#adauga").on('click', function(){
-        if($("#cantitate").val() == '' && parseInt($("#cantitate").val()) > parseInt($("#disponobil").val())) {
+        if($("#cantitate").val() == '' || parseInt($("#disponobil").val()) < -4 || parseInt($("#cantitate").val()) > 4 || parseInt($("#cantitate").val()) > parseInt($("#disponobil").val())) {
             $('#cantitate').addClass('has-error');
         } else {
             $('#cantitate').removeClass('has-error');
@@ -216,40 +282,36 @@ $( document ).ready(function() {
 
     });
     $("#submit-personal").on('click', function(){
-       if($("#nume").val() === ''){
+        hasError = false;
+        if($("#nume").val() === ''){
            hasError = true;
            $('#nume').addClass('has-error');
        } else {
            $('#nume').removeClass('has-error');
-           hasError = false;
        }
-        if($("#prenume").val() === ''){
+        if($("#prenume").val() === '' || $("#prenume").val().length > 14){
             hasError = true;
             $('#prenume').addClass('has-error');
         } else {
             $('#prenume').removeClass('has-error');
-            hasError = false;
         }
         if($("#email").val() === ''){
             hasError = true;
             $('#email').addClass('has-error');
         } else {
             $('#email').removeClass('has-error');
-            hasError = false;
         }
         if($("#varsta").val() === ''){
             hasError = true;
             $('#varsta').addClass('has-error');
         } else {
             $('#varsta').removeClass('has-error');
-            hasError = false;
         }
         if($("#localitate").val() === ''){
             hasError = true;
             $('#localitate').addClass('has-error');
         } else {
             $('#localitate').removeClass('has-error');
-            hasError = false;
         }
         if(!hasError) {
             $("#personal_form").hide();
