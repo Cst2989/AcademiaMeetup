@@ -23,7 +23,7 @@
             <div id="failed" class="row">
                 <div class="col">
                     <h2> Ne pare rau, comanda dumneavostra nu a putut fi procesata. Incercati din nou.</h2>
-                    <button id="reload" class="btn btn-primary mx-auto" style="width: 200px;display: block">Incearca din nou</button>
+                    <button id="reload" class="btn btn-primary mx-auto reload" style="width: 200px;display: block">Incearca din nou</button>
                 </div>
             </div>
             <div id="success" class="row">
@@ -49,7 +49,7 @@
                         </tr>
                         </tfoot>
                     </table>
-                    <button id="reload" class="btn btn-primary mx-auto" style="width: 200px;display: block">Comanda din nou</button>
+                    <button class="btn btn-primary mx-auto reload" style="width: 200px;display: block">Comanda din nou</button>
                 </div>
             </div>
             <div id="step-1" class="row">

@@ -325,7 +325,7 @@ $( document ).ready(function() {
         e.preventDefault(e);
     });
 
-    $("#reload").on('click', function(){
+    $(".reload").on('click', function(){
         window.location.reload();
     })
 });
